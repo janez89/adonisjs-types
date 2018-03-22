@@ -1,3 +1,7 @@
+### Version remarks
+
+Type dictionary for AdonisJS 4.1 version.
+
 ### Installation
 1. Install `adonisjs-types` package:
 
