@@ -232,6 +232,186 @@ declare namespace Adonis {
             run(): void
         }
     }
+    
+    class Database {
+        beginTransaction(): Database
+        commit(): void
+        rollback(): void
+        transaction(callback: (ctx: Database) => void): void
+
+        table(table: string): Database.Query
+        from(table: string): Database.Query
+        into(table: string): Database.Query
+
+        close(): void
+        close(connections: string[]): void
+    }
+
+    namespace Database {
+        type SimpleAny = number | string | Date 
+        type Direction = 'asc' | 'desc'
+        type AggragationResult = Promise<Object[][]>
+        type NumberResult = Promise<number>
+        type NumberResults = Promise<number[]>
+
+        interface PaginationPages {
+            total: number
+            currentPage: number
+            perPage: number
+            lastPage: number
+        }
+
+        class PaginationResult<T> {
+            pages: PaginationPages
+            row: T[]
+        }
+
+        type QueryOrResult<T> = Database.Query | Promise<T[]>
+
+        class Query {
+            select<T>(column: string): QueryOrResult<T>
+            select<T>(...columns: string[]): QueryOrResult<T>
+
+            where(column: string, value: any): Database.Query | Promise<Object[]>
+            where(column: string, operator: string, value: any): Database.Query
+            where(condition: Object): Database.Query
+            where(callback: Function): Database.Query
+            where(subquery: Database.Query): Database.Query
+            whereNot(column: string, value: any): Database.Query
+            whereNot(column: string, operator: string, value: any): Database.Query
+            whereNot(condition: Object): Database.Query
+            whereNot(subquery: Database.Query): Database.Query
+            whereIn(column: string, params: any[]): Database.Query
+            whereIn(column: string, subquery: Database.Query): Database.Query
+            whereNotIn(column: string, params: any[]): Database.Query
+            whereNotIn(column: string, subquery: Database.Query): Database.Query
+            whereNull(column: string): Database.Query
+            whereNotNull(column: string): Database.Query
+            whereExists(callback: Function): Database.Query
+            whereNotExists(callback: Function): Database.Query
+            whereBetween(column: string, params: number[]): Database.Query
+            whereNotBetween(column: string, params: number[]): Database.Query
+            whereRaw(exp: string, params: Database.SimpleAny[]): Database.Query
+
+            innerJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            innerJoin(table: string, callback: Function): Database.Query
+            leftJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            leftOuterJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            rightJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            rightOuterJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            outerJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            fullOuterJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            crossJoin(table: string, leftSideCondition: string, rightSideCondition: string): Database.Query
+            joinRaw(condition: string): Database.Query
+
+            distinct(column: string): Database.Query
+            groupBy(column: string): Database.Query
+            groupByRaw(exp: string): Database.Query
+            
+            orderBy(column: string, direction?: Database.Direction): Database.Query
+            orderByRaw(exp: string): Database.Query
+
+            having(column: string, operator: string, value: any): Database.Query
+            havingIn(column: string, params: any[]): Database.Query
+            havingNotIn(column: string, params: any[]): Database.Query
+            havingNull(column: string): Database.Query
+            havingNotNull(column: string): Database.Query
+            havingExists(subquery:Database.Query): Database.Query
+            havingExists(callback: Function): Database.Query
+            havingNotExists(subquery:Database.Query): Database.Query
+            havingNotExists(callback: Function): Database.Query
+            havingRaw(column: string, operator: string, value: Database.SimpleAny[]): Database.Query
+
+            offset(offset: number): Database.Query
+            limit(limit: number): Database.Query
+
+            insert(row: Object): NumberResults
+            insert(rows: Object[]): NumberResults
+            returning(column: string): NumberResult
+
+            update(column: string, value: Database.SimpleAny): NumberResult
+            update(row: Object): NumberResult
+
+            increment(column: string, value?: number): Promise<void>
+            decrement(column: string, value?: number): Promise<void>
+
+            delete(): NumberResult
+            truncate(table: string): NumberResult
+
+            forPage(page: number, limit?: number): Promise<Object[]>
+            forPage<T>(page: number, limit?: number): Promise<T[]>
+            paginate(page: number, limit?: number): Promise<Database.PaginationResult<Object>>
+            paginate<T>(page: number, limit?: number): Promise<Database.PaginationResult<T>>
+
+            count(): Database.AggragationResult
+            count(column: string): Database.AggragationResult
+            countDistinct(): Database.AggragationResult
+            min(column: string): Database.AggragationResult
+            max(column: string): Database.AggragationResult
+            sum(column: string): Database.AggragationResult
+            sumDistinct(column: string): Database.AggragationResult
+            avg(column: string): Database.AggragationResult
+            avgDistinct(column: string): Database.AggragationResult
+
+            // helpers
+            getCount(column?: string): NumberResult
+            getCountDistinct(column?: string): NumberResult
+            getMin(column: string): NumberResult
+            getMax(colum: string): NumberResult
+            getSum(column: string): NumberResult
+            getSumDistinct(column: string): NumberResult
+            getAvg(column: string): NumberResult
+            getAvgDistinct(column: string): NumberResult
+
+            pluck<T>(colum: string): Promise<T[]>
+            first<T>(): Promise<T>
+            map<T, R>(callback: (row: T | Object) => R): Promise<R[]> 
+            reduce<T, S>(reducer: (acc: S, row: T) => S, initValue: S): Promise<S>
+
+            clone(): Database
+            columnInfo(): Promise<Object>
+
+            raw<T>(expression: string, params?: Database.SimpleAny[]): Promise<T[]>
+
+            asCallback<T>(callback: (err: Object, rows: T[]) => void): void
+            stream(callback: any): Object
+            on(event: string, callback: Function): Database.Query
+            toSQL(): ToSQLResult
+
+            then(callback: (response: any) => void): Database.Query
+            catch(callback: (error: any) => void): Database.Query
+        }
+
+        interface ToSQLResult {
+            bindings: any[]
+            method: string
+            sql: string
+            toNative(): Object
+        }
+    }
+    
+    class Validator {
+        validate: Validator.ValidateFun
+        validateAll: Validator.ValidateFun
+        sanitize: Object    // TODO
+        sanitizor: Object   // TODO
+        formatters: Object  // TODO
+    }
+
+    namespace Validator {
+        type ValidateFun = (data: Object, rules: Object, messages?: Object, formatter?: Object) => Validator.ValidationResult
+
+        interface ErrorMessage {
+            message: string
+            field: string
+            validation: string
+        }
+
+        class ValidationResult {
+            fails(): boolean
+            messages(): ErrorMessage[]
+        }
+    }
 }
 
 declare namespace AdonisNamespaces {
@@ -249,11 +429,12 @@ declare namespace AdonisNamespaces {
     type Schema = 'Schema' | 'Adonis/Src/Schema'
     type View = 'View' | 'Adonis/Src/View'
     type Ws = 'Ws' | 'Adonis/Addons/Ws'
+    type Validator = 'Validator'
 }
 
 declare function use(namespace: AdonisNamespaces.Command): Adonis.WorkInProgress
 declare function use(namespace: AdonisNamespaces.Config): Adonis.Config
-declare function use(namespace: AdonisNamespaces.Database): Adonis.WorkInProgress
+declare function use(namespace: AdonisNamespaces.Database): Adonis.Database
 declare function use(namespace: AdonisNamespaces.Env): Adonis.Env
 declare function use(namespace: AdonisNamespaces.Event): Adonis.Event
 declare function use(namespace: AdonisNamespaces.Factory): Adonis.WorkInProgress
@@ -265,3 +446,4 @@ declare function use(namespace: AdonisNamespaces.Route): Adonis.Route.Manager
 declare function use(namespace: AdonisNamespaces.Schema): Adonis.WorkInProgress
 declare function use(namespace: AdonisNamespaces.View): Adonis.View
 declare function use(namespace: AdonisNamespaces.Ws): Adonis.WorkInProgress
+declare function use(namespace: AdonisNamespaces.Validator): Adonis.Validator
